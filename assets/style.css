@@ -182,6 +182,185 @@ h1 {
   color: #fbbf24; font-size: 12px; font-weight: 700; flex-shrink: 0;
 }
 
+/* ============================================================
+   NOUVELLE IDENTITÉ — Logo .live rouge + point pulsant
+   ============================================================ */
+.brand-live {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #ef4444; font-weight: 800; letter-spacing: -0.02em;
+}
+.brand-live::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+  animation: brand-pulse 2s ease-in-out infinite;
+}
+@keyframes brand-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ============================================================
+   BANDE ANNONCE CABINET (en tout haut)
+   ============================================================ */
+.announce-bar {
+  position: relative; z-index: 25;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.12), rgba(147, 51, 234, 0.12));
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 10px 20px; text-align: center; font-size: 13px;
+  color: #f1f5f9; backdrop-filter: blur(10px);
+}
+.announce-bar strong { color: #fff; }
+.announce-bar a {
+  color: #fda4af; font-weight: 600; text-decoration: underline;
+  text-decoration-color: rgba(253, 164, 175, 0.5);
+}
+.announce-bar a:hover { color: #fff; text-decoration-color: #fff; }
+
+/* ============================================================
+   NAV — ajout 2e CTA cabinet
+   ============================================================ */
+.nav-links { display: flex; gap: 10px; align-items: center; }
+.nav-cta-cabinet {
+  background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fda4af; padding: 9px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-cta-cabinet:hover {
+  background: rgba(239, 68, 68, 0.22); border-color: rgba(239, 68, 68, 0.6); color: #fff;
+}
+@media (max-width: 720px) {
+  .nav-cta { display: none; }  /* sur mobile, on garde uniquement le CTA cabinet */
+}
+
+/* ============================================================
+   BLOC CTA CABINET (plein largeur, après la grille)
+   ============================================================ */
+.cabinet-cta {
+  max-width: 1180px; margin: 64px auto 32px; padding: 0 24px;
+}
+.cabinet-cta-inner {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), rgba(147, 51, 234, 0.10));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 24px; padding: 44px 40px;
+  display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center;
+}
+.cabinet-cta-inner::before {
+  content: ""; position: absolute; width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.2), transparent 70%);
+  top: -100px; right: -100px; pointer-events: none;
+}
+.cabinet-cta-kicker {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #fda4af;
+  text-transform: uppercase; margin-bottom: 12px; position: relative;
+}
+.cabinet-cta h2 {
+  font-family: 'Sora'; font-size: clamp(24px, 3.5vw, 32px); font-weight: 800;
+  letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 14px; position: relative;
+}
+.cabinet-cta h2 .accent { color: #fda4af; }
+.cabinet-cta p { color: var(--text-dim); font-size: 15px; line-height: 1.6; max-width: 560px; position: relative; }
+.cabinet-cta .btn-cabinet {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  background: linear-gradient(to right, #ef4444, #9333ea);
+  color: #fff; padding: 16px 32px; border-radius: 999px;
+  font-family: 'Sora'; font-weight: 700; font-size: 15px;
+  white-space: nowrap; transition: all 0.2s;
+  box-shadow: 0 14px 36px rgba(239, 68, 68, 0.3); position: relative;
+}
+.cabinet-cta .btn-cabinet:hover {
+  transform: translateY(-2px); box-shadow: 0 18px 44px rgba(239, 68, 68, 0.45);
+}
+@media (max-width: 760px) {
+  .cabinet-cta-inner { grid-template-columns: 1fr; padding: 32px 24px; }
+}
+
+/* ============================================================
+   SECTION "Ils font confiance" — Logos partenaires
+   ============================================================ */
+.trust-section {
+  max-width: 1180px; margin: 56px auto 32px; padding: 0 24px;
+}
+.trust-section-head {
+  text-align: center; margin-bottom: 28px;
+}
+.trust-section-head .label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--indigo);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.trust-section-head h3 {
+  font-family: 'Sora'; font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+}
+.logo-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;
+}
+.logo-card {
+  aspect-ratio: 16/9;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  padding: 18px; color: var(--text-dimmer); font-family: 'Sora'; font-weight: 600;
+  font-size: 13px; text-align: center; transition: all 0.2s;
+}
+.logo-card.empty {
+  background: rgba(255, 255, 255, 0.02);
+  border-style: dashed; border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(100, 116, 139, 0.5);
+}
+.logo-card.filled { color: #fff; background: var(--bg-card); border-color: var(--border); }
+.logo-card:hover { transform: translateY(-2px); border-color: rgba(129, 140, 248, 0.3); }
+
+/* ============================================================
+   FAQ — Onglets + Accordéon
+   ============================================================ */
+.faq-section { max-width: 880px; margin: 64px auto 32px; padding: 0 24px; }
+.faq-head { text-align: center; margin-bottom: 32px; }
+.faq-head .label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--indigo);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.faq-head h2 { font-family: 'Sora'; font-size: clamp(28px, 4vw, 36px); font-weight: 800; letter-spacing: -0.03em; }
+
+.faq-tabs {
+  display: flex; gap: 4px; padding: 4px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 999px; max-width: 380px; margin: 0 auto 28px;
+}
+.faq-tab {
+  flex: 1; background: transparent; border: none;
+  color: var(--text-dim); padding: 10px 18px; border-radius: 999px;
+  font-family: 'Inter'; font-weight: 600; font-size: 13px; cursor: pointer;
+  transition: all 0.2s;
+}
+.faq-tab.active { background: var(--grad); color: #fff; box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3); }
+
+.faq-panel { display: none; }
+.faq-panel.active { display: block; }
+
+.faq-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+  transition: all 0.2s;
+}
+.faq-item[open] { border-color: rgba(129, 140, 248, 0.3); background: rgba(129, 140, 248, 0.04); }
+.faq-item summary {
+  list-style: none; cursor: pointer; padding: 18px 22px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  font-family: 'Sora'; font-weight: 600; font-size: 15px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; font-size: 22px; color: var(--indigo); font-weight: 400;
+  transition: transform 0.2s; flex-shrink: 0;
+}
+.faq-item[open] summary::after { content: "−"; }
+.faq-answer {
+  padding: 0 22px 20px; color: var(--text-dim); font-size: 14px;
+  line-height: 1.65;
+}
+.faq-answer strong { color: #fff; }
+.faq-answer a { color: var(--indigo); }
+
 /* Footer */
 footer {
   border-top: 1px solid var(--border); padding: 40px 24px;
@@ -194,4 +373,5 @@ footer a:hover { color: #fff; }
 @media (max-width: 640px) {
   h1 { font-size: 36px; }
   .hero { padding: 40px 20px 32px; }
+  .announce-bar { font-size: 12px; padding: 9px 14px; }
 }
