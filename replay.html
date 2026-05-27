@@ -276,14 +276,13 @@
         box.className = "result-box match";
         box.innerHTML = `<span class="icon">✓</span>
           <strong>${m.expert.company} couvre votre département (${m.dept}).</strong>
-          <p>Bonne nouvelle : <strong>${m.expert.name}</strong>, l'expert qui anime ce webinaire, exerce dans votre zone. Premier contact gratuit, sans engagement.</p>
-          <button class="cta-gradient" style="font-size:14px;padding:11px 22px">Demander à être contacté →</button>`;
+          <p>Bonne nouvelle : <strong>${m.expert.name}</strong>, l'expert qui anime ce webinaire, exerce dans votre zone. Vous serez recontacté sous 48h pour un premier échange, sans engagement.</p>
+          <p class="result-note">Vous restez libre. Aucune obligation. Aucun frais.</p>`;
       } else if (m.partner) {
         box.className = "result-box relocate";
         box.innerHTML = `<span class="icon">📍</span>
           <strong>Un cabinet près de chez vous est disponible.</strong>
-          <p>${m.expert.name} exerce sur d'autres départements, mais MCPL travaille aussi avec <strong>${m.partner.company}</strong>, cabinet certifié <strong>${m.partner.rating}/5</strong> dans le ${m.dept}. Mêmes standards de qualité.</p>
-          <button class="cta-gradient" style="font-size:14px;padding:11px 22px">Être mis en relation →</button>
+          <p>${m.expert.name} exerce sur d'autres départements, mais MCPL travaille aussi avec <strong>${m.partner.company}</strong>, cabinet certifié <strong>${m.partner.rating}/5</strong> dans le ${m.dept}. Mêmes standards de qualité. Vous serez recontacté sous 48h, si vous le souhaitez.</p>
           <p class="result-note">Vous restez libre. Aucune obligation. Aucun frais.</p>`;
       } else {
         box.className = "result-box relocate";
