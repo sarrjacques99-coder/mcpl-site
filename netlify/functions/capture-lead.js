@@ -104,10 +104,30 @@ export default async (request) => {
     created_at: new Date().toISOString(),
   };
 
+  // --- Anti-doublon : même email + même video déjà capturé ? ---
+  // On débloque quand même la vidéo (UX), mais on ne re-stocke pas.
+  const emailNormalized = email.trim().toLowerCase();
+  let isDuplicate = false;
   try {
-    const leads = getStore("leads");
-    const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await leads.setJSON(key, lead);
+    const leadsStore = getStore("leads");
+    const { blobs } = await leadsStore.list();
+    for (const b of blobs) {
+      const existing = await leadsStore.get(b.key, { type: "json" });
+      if (existing && existing.email === emailNormalized && existing.video_id === video_id) {
+        isDuplicate = true;
+        break;
+      }
+    }
+  } catch (e) {
+    console.error("Dedup check error:", e);
+  }
+
+  try {
+    if (!isDuplicate) {
+      const leads = getStore("leads");
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      await leads.setJSON(key, lead);
+    }
   } catch (e) {
     console.error("Lead store error:", e);
   }
