@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Mon Comptable Part en Live</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    .admin { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+    .admin h1 { font-size: 30px; margin-bottom: 6px; }
+    .admin .sub { color: var(--text-dim); margin-bottom: 28px; }
+
+    .auth-bar { display: flex; gap: 10px; margin-bottom: 28px; max-width: 480px; }
+    .auth-bar input { flex: 1; }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .tab { background: transparent; border: none; color: var(--text-dim); padding: 10px 18px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tab.active { color: #fff; border-color: var(--indigo); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+    .card h3 { font-family: 'Sora'; font-size: 18px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.02em; }
+    .card.live-on { border-color: rgba(220,38,38,0.4); }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
+    .field input, .field textarea, .field select {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px; color: #fff; font-family: 'Inter'; font-size: 14px;
+    }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      outline: none; border-color: var(--indigo); background: rgba(255,255,255,0.09);
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+    .err { color: #f87171; font-size: 11px; margin-top: 4px; display: block; min-height: 14px; }
+
+    .toggle { display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); border-radius: 10px; }
+    .toggle input { width: 18px; height: 18px; accent-color: #dc2626; }
+    .toggle label { font-size: 13px; color: #fca5a5; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Inter'; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: var(--grad); color: #fff; }
+    .btn-secondary { background: var(--bg-card); border: 1px solid var(--border); color: #fff; }
+    .btn-danger { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.4); color: #fca5a5; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .replay-list { display: grid; gap: 12px; }
+    .replay-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; }
+    .replay-row .meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    .replay-row strong { font-family: 'Sora'; font-size: 14px; }
+    .replay-actions { display: flex; gap: 6px; }
+    .replay-actions button { padding: 6px 12px; font-size: 12px; }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 100; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.success { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); color: #4ade80; }
+    .toast.error { background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.5); color: #fca5a5; }
+
+    .empty-state { padding: 40px; text-align: center; color: var(--text-dim); background: var(--bg-card); border: 1px dashed var(--border); border-radius: 16px; }
+
+    .badge-live { display: inline-block; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.05em; margin-left: 8px; }
+
+    .help { font-size: 12px; color: var(--text-dimmer); margin-top: 4px; }
+    .help code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="halos" aria-hidden="true"><div class="halo halo-blue"></div><div class="halo halo-purple"></div></div>
+  <header>
+    <nav class="topnav">
+      <a href="index.html" class="brand"><span class="brand-dot"></span>MCPL<span style="color:#64748b">.live</span></a>
+      <a href="regie.html" class="nav-cta">Voir les leads →</a>
+    </nav>
+  </header>
+
+  <main class="admin">
+    <h1>Admin — Contenu</h1>
+    <p class="sub">Pilotez le prochain live et la bibliothèque de replays.</p>
+
+    <div class="auth-bar" id="auth-bar">
+      <input type="password" id="token" placeholder="Token admin" />
+      <button class="btn btn-primary" onclick="init()">Connexion</button>
+    </div>
+
+    <div id="app" style="display:none">
+      <div class="tabs">
+        <button class="tab active" data-panel="event">📅 Prochain live</button>
+        <button class="tab" data-panel="replays">📺 Replays</button>
+      </div>
+
+      <!-- ========== PANEL EVENT ========== -->
+      <section class="panel active" id="panel-event">
+        <div class="card" id="event-card">
+          <h3>Événement à l'affiche <span id="live-badge"></span></h3>
+
+          <div class="row">
+            <div class="field"><label>Titre du live</label><input id="ev-title" placeholder="Holding patrimoniale : les 5 erreurs qui coûtent cher" /><span class="err" id="e-ev-title"></span></div>
+            <div class="field"><label>Catégorie / sujet</label><input id="ev-tag" placeholder="Holding" /></div>
+          </div>
+
+          <div class="field"><label>Description</label><textarea id="ev-description" placeholder="Décrivez ce qui sera abordé pendant le live, le public visé, les questions traitées…"></textarea></div>
+
+          <div class="row3">
+            <div class="field"><label>Nom de l'expert</label><input id="ev-expert_name" placeholder="Claire Moreau" /><span class="err" id="e-ev-expert_name"></span></div>
+            <div class="field"><label>Cabinet</label><input id="ev-expert_company" placeholder="Moreau & Associés" /><span class="err" id="e-ev-expert_company"></span></div>
+            <div class="field"><label>Note (≥ 4,5)</label><input id="ev-expert_rating" type="number" step="0.1" min="4.5" max="5" placeholder="4.8" /><span class="err" id="e-ev-expert_rating"></span></div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Date et heure</label>
+              <input id="ev-scheduled_at" type="datetime-local" /><span class="err" id="e-ev-scheduled_at"></span>
+            </div>
+            <div class="field"><label>Durée (minutes)</label><input id="ev-duration_min" type="number" value="60" /></div>
+          </div>
+
+          <div class="field">
+            <label>Départements couverts par l'expert</label>
+            <input id="ev-covered_departments" placeholder="75, 92, 94" />
+            <span class="help">Liste de numéros séparés par des virgules. Sert au matching code postal des spectateurs.</span>
+            <span class="err" id="e-ev-covered_departments"></span>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="ev-is_live" />
+            <label for="ev-is_live"><strong>Le live est EN COURS</strong> — afficher le player StreamYard sur le site.</label>
+          </div>
+
+          <div class="field" id="stream-url-wrap" style="margin-top:14px">
+            <label>URL d'embed StreamYard (ou autre)</label>
+            <input id="ev-stream_url" placeholder="https://streamyard.com/watch/XXXXXXX" />
+            <span class="help">Active uniquement quand <code>Live en cours</code> est coché.</span>
+            <span class="err" id="e-ev-stream_url"></span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveEvent()">Enregistrer</button>
+            <button class="btn btn-danger" onclick="deleteEvent()">Retirer l'événement du site</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== PANEL REPLAYS ========== -->
+      <section class="panel" id="panel-replays">
+        <div class="card">
+          <h3 id="replay-form-title">Ajouter un replay</h3>
+
+          <input type="hidden" id="re-id" value="" />
+
+          <div class="row">
+            <div class="field"><label>Titre du replay</label><input id="re-title" placeholder="5 erreurs qui transforment votre holding en piège fiscal" /><span class="err" id="e-re-title"></span></div>
+            <div class="field"><label>Catégorie</label><input id="re-tag" placeholder="Holding" /><span class="err" id="e-re-tag"></span></div>
+          </div>
+
+          <div class="field"><label>Description</label><textarea id="re-description" placeholder="Court résumé visible sur la carte et la page replay."></textarea></div>
+
+          <div class="row3">
+            <div class="field"><label>Expert</label><input id="re-expert_name" placeholder="Claire Moreau" /><span class="err" id="e-re-expert_name"></span></div>
+            <div class="field"><label>Cabinet</label><input id="re-expert_company" placeholder="Moreau & Associés" /><span class="err" id="e-re-expert_company"></span></div>
+            <div class="field"><label>Note (≥ 4,5)</label><input id="re-expert_rating" type="number" step="0.1" min="4.5" max="5" placeholder="4.8" /><span class="err" id="e-re-expert_rating"></span></div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>ID YouTube</label>
+              <input id="re-youtube_id" placeholder="dQw4w9WgXcQ" />
+              <span class="help">Juste l'ID, pas l'URL complète. Ex : pour <code>youtube.com/watch?v=dQw4w9WgXcQ</code>, mettre <code>dQw4w9WgXcQ</code>.</span>
+              <span class="err" id="e-re-youtube_id"></span>
+            </div>
+            <div class="field"><label>Durée affichée</label><input id="re-duration" placeholder="Replay · 32 min" /></div>
+          </div>
+
+          <div class="field">
+            <label>Départements couverts par l'expert</label>
+            <input id="re-covered_departments" placeholder="75, 92, 94" />
+            <span class="err" id="e-re-covered_departments"></span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveReplay()">Enregistrer</button>
+            <button class="btn btn-secondary" onclick="resetReplayForm()" id="cancel-edit" style="display:none">Annuler l'édition</button>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Sora';margin:28px 0 14px;letter-spacing:-0.02em">Replays publiés</h3>
+        <div class="replay-list" id="replay-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let TOKEN = null;
+    const $ = (id) => document.getElementById(id);
+    const toast = (msg, type = "success") => {
+      const t = $("toast"); t.textContent = msg; t.className = "toast show " + type;
+      setTimeout(() => t.classList.remove("show"), 2400);
+    };
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
+      document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + b.dataset.panel));
+    });
+
+    async function api(action, payload = {}) {
+      const res = await fetch("/.netlify/functions/admin-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": TOKEN },
+        body: JSON.stringify({ action, ...payload }),
+      });
+      const data = await res.json();
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    async function init() {
+      TOKEN = $("token").value.trim();
+      if (!TOKEN) return;
+      const r = await api("get_all");
+      if (r.status === 401) { toast("Token invalide", "error"); return; }
+      if (!r.ok) { toast("Erreur de chargement", "error"); return; }
+      localStorage.setItem("mcpl_admin_token", TOKEN);
+      $("auth-bar").style.display = "none";
+      $("app").style.display = "block";
+      hydrateEvent(r.data.live);
+      hydrateReplays(r.data.replays || []);
+    }
+
+    function hydrateEvent(live) {
+      const card = $("event-card");
+      $("live-badge").innerHTML = "";
+      if (!live) { card.classList.remove("live-on"); return; }
+      $("ev-title").value = live.title || "";
+      $("ev-tag").value = live.tag || "";
+      $("ev-description").value = live.description || "";
+      $("ev-expert_name").value = live.expert_name || "";
+      $("ev-expert_company").value = live.expert_company || "";
+      $("ev-expert_rating").value = live.expert_rating || "";
+      $("ev-scheduled_at").value = live.scheduled_at ? live.scheduled_at.slice(0, 16) : "";
+      $("ev-duration_min").value = live.duration_min || 60;
+      $("ev-covered_departments").value = (live.covered_departments || []).join(", ");
+      $("ev-is_live").checked = !!live.is_live;
+      $("ev-stream_url").value = live.stream_url || "";
+      if (live.is_live) { card.classList.add("live-on"); $("live-badge").innerHTML = '<span class="badge-live">● EN DIRECT</span>'; }
+    }
+
+    function clearErrors(prefix) {
+      ["title","tag","expert_name","expert_company","expert_rating","scheduled_at","covered_departments","stream_url","youtube_id"]
+        .forEach((f) => { const e = $("e-" + prefix + "-" + f); if (e) e.textContent = ""; });
+    }
+
+    function parseDepts(s) {
+      return (s || "").split(",").map((x) => x.trim()).filter(Boolean).map(Number).filter((n) => !isNaN(n));
+    }
+
+    async function saveEvent() {
+      clearErrors("ev");
+      const payload = {
+        title: $("ev-title").value.trim(),
+        tag: $("ev-tag").value.trim(),
+        description: $("ev-description").value.trim(),
+        expert_name: $("ev-expert_name").value.trim(),
+        expert_company: $("ev-expert_company").value.trim(),
+        expert_rating: parseFloat($("ev-expert_rating").value),
+        scheduled_at: $("ev-scheduled_at").value || null,
+        duration_min: parseInt($("ev-duration_min").value, 10) || 60,
+        covered_departments: parseDepts($("ev-covered_departments").value),
+        is_live: $("ev-is_live").checked,
+        stream_url: $("ev-stream_url").value.trim(),
+      };
+      const r = await api("save_event", { event: payload });
+      if (!r.ok) {
+        if (r.data.fields) Object.entries(r.data.fields).forEach(([f, m]) => { const e = $("e-ev-" + f); if (e) e.textContent = m; });
+        toast("Vérifiez les champs", "error"); return;
+      }
+      toast("Événement enregistré");
+      hydrateEvent(r.data.event);
+    }
+
+    async function deleteEvent() {
+      if (!confirm("Retirer l'événement du site ?")) return;
+      const r = await api("delete_event");
+      if (!r.ok) { toast("Erreur", "error"); return; }
+      ["title","tag","description","expert_name","expert_company","expert_rating","scheduled_at","covered_departments","stream_url"]
+        .forEach((f) => { const e = $("ev-" + f); if (e) e.value = ""; });
+      $("ev-is_live").checked = false; $("ev-duration_min").value = 60;
+      $("event-card").classList.remove("live-on"); $("live-badge").innerHTML = "";
+      toast("Événement retiré");
+    }
+
+    function hydrateReplays(list) {
+      const c = $("replay-list");
+      if (!list.length) { c.innerHTML = '<div class="empty-state">Aucun replay. Ajoutez-en un avec le formulaire ci-dessus.</div>'; return; }
+      c.innerHTML = list.map((r) => `
+        <div class="replay-row">
+          <div>
+            <strong>${escapeHtml(r.title)}</strong>
+            <div class="meta">${escapeHtml(r.expert_name)} · ${escapeHtml(r.expert_company)} · ${escapeHtml(r.tag || "")} · Dépt ${(r.covered_departments || []).join(", ")}</div>
+          </div>
+          <div class="replay-actions">
+            <button class="btn btn-secondary" onclick='editReplay(${JSON.stringify(r).replace(/'/g, "&#39;")})'>Éditer</button>
+            <button class="btn btn-danger" onclick="deleteReplay('${r.id}')">Suppr.</button>
+          </div>
+        </div>`).join("");
+    }
+
+    function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+    function editReplay(r) {
+      $("replay-form-title").textContent = "Éditer le replay";
+      $("re-id").value = r.id;
+      $("re-title").value = r.title || "";
+      $("re-tag").value = r.tag || "";
+      $("re-description").value = r.description || "";
+      $("re-expert_name").value = r.expert_name || "";
+      $("re-expert_company").value = r.expert_company || "";
+      $("re-expert_rating").value = r.expert_rating || "";
+      $("re-youtube_id").value = r.youtube_id || "";
+      $("re-duration").value = r.duration || "";
+      $("re-covered_departments").value = (r.covered_departments || []).join(", ");
+      $("cancel-edit").style.display = "inline-block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function resetReplayForm() {
+      $("replay-form-title").textContent = "Ajouter un replay";
+      $("re-id").value = "";
+      ["title","tag","description","expert_name","expert_company","expert_rating","youtube_id","duration","covered_departments"]
+        .forEach((f) => { const e = $("re-" + f); if (e) e.value = ""; });
+      $("cancel-edit").style.display = "none";
+    }
+
+    async function saveReplay() {
+      clearErrors("re");
+      const payload = {
+        id: $("re-id").value || undefined,
+        title: $("re-title").value.trim(),
+        tag: $("re-tag").value.trim(),
+        description: $("re-description").value.trim(),
+        expert_name: $("re-expert_name").value.trim(),
+        expert_company: $("re-expert_company").value.trim(),
+        expert_rating: parseFloat($("re-expert_rating").value),
+        youtube_id: $("re-youtube_id").value.trim(),
+        duration: $("re-duration").value.trim() || "Replay",
+        covered_departments: parseDepts($("re-covered_departments").value),
+      };
+      const r = await api("save_replay", { replay: payload });
+      if (!r.ok) {
+        if (r.data.fields) Object.entries(r.data.fields).forEach(([f, m]) => { const e = $("e-re-" + f); if (e) e.textContent = m; });
+        toast("Vérifiez les champs", "error"); return;
+      }
+      toast(payload.id ? "Replay mis à jour" : "Replay ajouté");
+      resetReplayForm();
+      const all = await api("get_all");
+      if (all.ok) hydrateReplays(all.data.replays || []);
+    }
+
+    async function deleteReplay(id) {
+      if (!confirm("Supprimer ce replay définitivement ?")) return;
+      const r = await api("delete_replay", { id });
+      if (!r.ok) { toast("Erreur", "error"); return; }
+      toast("Replay supprimé");
+      const all = await api("get_all");
+      if (all.ok) hydrateReplays(all.data.replays || []);
+    }
+
+    // Auto-login si token sauvegardé
+    const saved = localStorage.getItem("mcpl_admin_token");
+    if (saved) { $("token").value = saved; init(); }
+  </script>
+</body>
+</html>

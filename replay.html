@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Replay — Mon Comptable Part en Live</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    .replay-wrap { max-width: 880px; margin: 0 auto; padding: 32px 24px 80px; }
+    .back { color: var(--text-dim); font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; }
+    .back:hover { color: #fff; }
+    .live-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.4); color: #fca5a5; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .live-tag::before { content: "●"; color: #dc2626; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+
+    .stage { position: relative; aspect-ratio: 16/9; border-radius: 20px; overflow: hidden; background: var(--grad-soft); border: 1px solid var(--border); }
+    .stage iframe { width: 100%; height: 100%; border: 0; }
+    .stage-locked { display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; padding: 24px; text-align: center; }
+    .stage-locked .lock { font-size: 38px; opacity: 0.7; }
+    .stage-locked p { color: rgba(255,255,255,0.75); margin-top: 14px; font-size: 14px; max-width: 320px; }
+
+    .replay-info { margin-top: 24px; }
+    .replay-info .tag { display: inline-block; background: var(--bg-card); border: 1px solid var(--border); padding: 5px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--indigo); margin-bottom: 14px; }
+    .replay-info h1 { font-size: clamp(24px, 4vw, 34px); margin-bottom: 12px; line-height: 1.15; letter-spacing: -0.02em; }
+    .replay-info p.desc { color: var(--text-dim); font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
+
+    .gate-overlay { position: fixed; inset: 0; z-index: 50; display: none; background: rgba(3,2,20,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; }
+    .gate-overlay.open { display: flex; }
+    .gate-card { width: 100%; max-width: 460px; background: #0a0820; border: 1px solid rgba(255,255,255,0.12); border-radius: 22px; padding: 32px 28px; box-shadow: 0 40px 80px rgba(0,0,0,0.6); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .gate-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--indigo); text-transform: uppercase; margin-bottom: 12px; text-align: center; }
+    .gate-card h2 { font-family: 'Sora'; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-align: center; line-height: 1.2; margin-bottom: 10px; }
+    .gate-card .gate-sub { color: var(--text-dim); font-size: 14px; text-align: center; line-height: 1.55; margin-bottom: 22px; }
+
+    .field { margin-bottom: 12px; }
+    .row { display: flex; gap: 10px; }
+    .row .field { flex: 1; }
+    .field input[type=text], .field input[type=email] { width: 100%; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 0 14px; color: #fff; font-size: 14px; font-family: 'Inter'; }
+    .field input:focus { outline: none; border-color: var(--indigo); background: rgba(255,255,255,0.09); }
+    .postal-row { display: flex; gap: 8px; }
+    .postal-row .field { flex: 1; margin-bottom: 0; }
+    .geo-btn { flex-shrink: 0; padding: 0 14px; border-radius: 12px; height: 46px; background: rgba(129,140,248,0.15); border: 1px solid rgba(129,140,248,0.3); color: #c7d2fe; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .field .hint { font-size: 11px; color: var(--text-dimmer); margin-top: 4px; display: block; }
+
+    .consent { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 6px; }
+    .consent input { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #6366f1; }
+    .consent label { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .consent label a { color: var(--indigo); text-decoration: underline; }
+    .err { color: #f87171; font-size: 11px; margin-top: 4px; display: block; min-height: 14px; }
+    .gate-card .cta-gradient { width: 100%; margin-top: 12px; }
+    .no-pw { text-align: center; font-size: 11px; color: var(--text-dimmer); margin-top: 14px; line-height: 1.6; }
+    .loading { opacity: 0.6; pointer-events: none; }
+
+    .result-box { margin-top: 24px; padding: 22px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-card); }
+    .result-box .icon { font-size: 24px; margin-bottom: 10px; display: inline-block; }
+    .result-box.match { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+    .result-box.relocate { border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.05); }
+    .result-box strong { font-family: 'Sora'; font-size: 17px; display: block; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .result-box p { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
+    .result-box p strong { display: inline; font-family: 'Inter'; font-size: 14px; color: #c084fc; }
+    .result-note { color: var(--text-dimmer); font-size: 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="halos" aria-hidden="true"><div class="halo halo-blue"></div><div class="halo halo-purple"></div></div>
+
+  <header>
+    <nav class="topnav">
+      <a href="index.html" class="brand"><span class="brand-dot"></span>MCPL<span style="color:#64748b">.live</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="replay-wrap" id="page-wrap" style="display:none">
+      <a href="index.html" class="back">← Tous les replays</a>
+
+      <div class="stage" id="stage">
+        <div class="stage-locked">
+          <span class="lock">🔒</span>
+          <p>Renseignez vos informations pour accéder à ce contenu</p>
+        </div>
+      </div>
+
+      <div class="replay-info">
+        <span id="r-live-tag"></span>
+        <span class="tag" id="r-tag"></span>
+        <h1 id="r-title"></h1>
+        <p class="desc" id="r-desc"></p>
+        <div id="r-expert"></div>
+        <div style="margin-top:24px">
+          <button class="cta-gradient" id="open-gate">Débloquer maintenant →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="error-state" style="display:none;max-width:680px;margin:60px auto;padding:0 24px;text-align:center">
+      <h2 style="font-family:'Sora';margin-bottom:12px">Contenu introuvable</h2>
+      <p style="color:var(--text-dim);margin-bottom:20px">Ce replay n'existe pas ou a été retiré.</p>
+      <a href="index.html" class="cta-gradient">Retour à l'accueil</a>
+    </div>
+  </main>
+
+  <!-- Smart Gate -->
+  <div class="gate-overlay" id="gate">
+    <div class="gate-card">
+      <div class="gate-kicker">Accès gratuit · Sans mot de passe</div>
+      <h2>Encore une étape avant de regarder.</h2>
+      <p class="gate-sub">Dites-nous qui vous êtes. À la fin, on vous propose une mise en relation avec un cabinet certifié dans votre département — uniquement si vous le souhaitez.</p>
+
+      <div class="row">
+        <div class="field"><input type="text" id="first_name" placeholder="Prénom" /><span class="err" id="e-first_name"></span></div>
+        <div class="field"><input type="text" id="last_name" placeholder="Nom" /><span class="err" id="e-last_name"></span></div>
+      </div>
+      <div class="field"><input type="email" id="email" placeholder="Email professionnel" /><span class="err" id="e-email"></span></div>
+      <div class="field"><input type="text" id="company" placeholder="Société" /><span class="err" id="e-company"></span></div>
+      <div class="postal-row">
+        <div class="field"><input type="text" id="postal_code" placeholder="Code postal" maxlength="5" inputmode="numeric" /></div>
+        <button class="geo-btn" id="geo">📍 Détecter</button>
+      </div>
+      <span class="hint">Sert à trouver un cabinet près de chez vous.</span>
+      <span class="err" id="e-postal_code"></span>
+
+      <div class="consent">
+        <input type="checkbox" id="consent" />
+        <label for="consent">
+          J'accepte que MCPL utilise mes informations pour me proposer une mise en relation avec un cabinet partenaire certifié et m'informer des prochains webinaires. Je peux me désinscrire à tout moment. <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>. *
+        </label>
+      </div>
+      <span class="err" id="e-consent"></span>
+
+      <button class="cta-gradient" id="submit">Débloquer le replay →</button>
+      <p class="no-pw">Aucune carte bancaire · Aucun mot de passe · 1 clic pour se désinscrire</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const videoId = params.get("v");
+    const contentType = params.get("type") === "live" ? "live" : "replay";
+
+    let currentContent = null;
+
+    async function bootstrap() {
+      try {
+        const res = await fetch("/.netlify/functions/get-content");
+        const data = await res.json();
+        if (contentType === "live") {
+          if (!data.live) { $("error-state").style.display = "block"; return; }
+          currentContent = { ...data.live, id: "live", type: "live" };
+        } else {
+          const r = (data.replays || []).find((x) => x.id === videoId);
+          if (!r) { $("error-state").style.display = "block"; return; }
+          currentContent = { ...r, type: "replay" };
+        }
+        hydrate();
+      } catch (e) {
+        $("error-state").style.display = "block";
+      }
+    }
+
+    function hydrate() {
+      $("page-wrap").style.display = "block";
+      $("r-tag").textContent = currentContent.tag || "Webinaire";
+      $("r-title").textContent = currentContent.title;
+      $("r-desc").textContent = currentContent.description || "";
+
+      if (contentType === "live") {
+        $("r-live-tag").innerHTML = currentContent.is_live ? '<span class="live-tag">EN DIRECT MAINTENANT</span>' : '';
+        const dt = currentContent.scheduled_at ? new Date(currentContent.scheduled_at) : null;
+        if (dt && !currentContent.is_live) {
+          const dateStr = dt.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+          const timeStr = dt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+          $("r-live-tag").innerHTML = `<span class="live-tag" style="background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4);color:#c7d2fe">PROCHAIN LIVE · ${dateStr.toUpperCase()} · ${timeStr}</span>`.replace("●", "");
+        }
+        $("open-gate").textContent = currentContent.is_live ? "Rejoindre le direct →" : "Réserver ma place →";
+      }
+
+      const initials = (currentContent.expert_name || "").split(/\s+/).map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+      const depts = (currentContent.covered_departments || []).join(", ");
+      $("r-expert").innerHTML = `
+        <div class="expert-chip">
+          <div class="avatar">${initials}</div>
+          <div class="expert-meta">
+            <div class="expert-name">${currentContent.expert_name || ""}</div>
+            <div class="expert-company">${currentContent.expert_company || ""}${depts ? " · Dépt " + depts : ""}</div>
+          </div>
+          <span class="rating"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>${Number(currentContent.expert_rating || 4.5).toFixed(1)}</span>
+        </div>`;
+    }
+
+    bootstrap();
+
+    const gate = $("gate");
+    $("open-gate").onclick = () => gate.classList.add("open");
+    gate.onclick = (e) => { if (e.target === gate) gate.classList.remove("open"); };
+
+    $("geo").onclick = () => {
+      if (!navigator.geolocation) { alert("Géolocalisation non disponible."); return; }
+      const btn = $("geo"); btn.textContent = "...";
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const r = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+            const j = await r.json();
+            const cp = j.features?.[0]?.properties?.postcode;
+            if (cp) $("postal_code").value = cp;
+          } catch (_) {}
+          btn.textContent = "📍 Détecter";
+        },
+        () => { btn.textContent = "📍 Détecter"; alert("Localisation refusée."); }
+      );
+    };
+
+    function clearErrors() {
+      ["first_name","last_name","email","company","postal_code","consent"].forEach((f) => {
+        const el = $("e-" + f); if (el) el.textContent = "";
+      });
+    }
+
+    function getUTM() {
+      const u = {};
+      ["utm_source","utm_medium","utm_campaign"].forEach((k) => { if (params.get(k)) u[k] = params.get(k); });
+      return Object.keys(u).length ? u : null;
+    }
+
+    $("submit").onclick = async function () {
+      clearErrors();
+      const payload = {
+        first_name: $("first_name").value,
+        last_name: $("last_name").value,
+        email: $("email").value,
+        company: $("company").value,
+        postal_code: $("postal_code").value.replace(/\D/g, ""),
+        consent: $("consent").checked,
+        video_id: contentType === "live" ? "live" : videoId,
+        content_type: contentType,
+        utm: getUTM(),
+      };
+      const btn = this;
+      btn.classList.add("loading"); btn.textContent = "Vérification…";
+
+      try {
+        const res = await fetch("/.netlify/functions/capture-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.fields) Object.entries(data.fields).forEach(([f, msg]) => { const el = $("e-" + f); if (el) el.textContent = msg; });
+          btn.classList.remove("loading"); btn.textContent = "Débloquer le replay →";
+          return;
+        }
+
+        gate.classList.remove("open");
+        // Embed selon le type
+        if (data.playback.type === "live") {
+          $("stage").innerHTML = `<iframe src="${data.playback.stream_url}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        } else {
+          $("stage").innerHTML = `<iframe src="https://www.youtube.com/embed/${data.playback.youtube_id}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        }
+        $("open-gate").style.display = "none";
+        showMatchingResult(data.matching);
+      } catch (err) {
+        btn.classList.remove("loading"); btn.textContent = "Débloquer le replay →";
+        alert("Une erreur est survenue. Réessayez.");
+      }
+    };
+
+    function showMatchingResult(m) {
+      const wrap = document.querySelector(".replay-info");
+      const box = document.createElement("div");
+      if (m.is_match) {
+        box.className = "result-box match";
+        box.innerHTML = `<span class="icon">✓</span>
+          <strong>${m.expert.company} couvre votre département (${m.dept}).</strong>
+          <p>Bonne nouvelle : <strong>${m.expert.name}</strong>, l'expert qui anime ce webinaire, exerce dans votre zone. Premier contact gratuit, sans engagement.</p>
+          <button class="cta-gradient" style="font-size:14px;padding:11px 22px">Demander à être contacté →</button>`;
+      } else if (m.partner) {
+        box.className = "result-box relocate";
+        box.innerHTML = `<span class="icon">📍</span>
+          <strong>Un cabinet près de chez vous est disponible.</strong>
+          <p>${m.expert.name} exerce sur d'autres départements, mais MCPL travaille aussi avec <strong>${m.partner.company}</strong>, cabinet certifié <strong>${m.partner.rating}/5</strong> dans le ${m.dept}. Mêmes standards de qualité.</p>
+          <button class="cta-gradient" style="font-size:14px;padding:11px 22px">Être mis en relation →</button>
+          <p class="result-note">Vous restez libre. Aucune obligation. Aucun frais.</p>`;
+      } else {
+        box.className = "result-box relocate";
+        box.innerHTML = `<span class="icon">📍</span>
+          <strong>On vous a inscrit sur la liste d'attente du ${m.dept}.</strong>
+          <p>Nous n'avons pas encore de cabinet partenaire certifié 4,5/5 dans votre département. C'est volontaire — nous préférons ne recommander personne plutôt que de recommander mal. Dès qu'un cabinet rejoint MCPL dans le ${m.dept}, vous serez prévenu.</p>`;
+      }
+      wrap.appendChild(box);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# ============================================================
+#  Configuration Netlify — Mon Comptable Part en Live
+# ============================================================
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Les Functions utilisent le runtime moderne (ESM + @netlify/blobs)
+[functions]
+  node_bundler = "esbuild"
+
+# Redirection propre pour l'API (optionnel, le chemin par défaut marche déjà)
+[[redirects]]
+  from = "/api/capture-lead"
+  to = "/.netlify/functions/capture-lead"
+  status = 200
+
+[[redirects]]
+  from = "/api/leads"
+  to = "/.netlify/functions/list-leads"
+  status = 200
+
+# En-têtes de sécurité de base
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

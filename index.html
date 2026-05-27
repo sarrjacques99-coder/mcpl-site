@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Comptable Part en Live — Vos questions, des réponses d'experts certifiés</title>
+  <meta name="description" content="Webinaires gratuits animés par des experts-comptables vérifiés 4,5/5 minimum. Posez vos questions, trouvez le bon cabinet près de chez vous." />
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Bloc événement à l'affiche */
+    .featured {
+      max-width: 1100px; margin: 12px auto 40px; padding: 0 24px;
+    }
+    .featured-card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(147,51,234,0.12));
+      border: 1px solid rgba(129,140,248,0.3);
+      border-radius: 22px; padding: 28px;
+      overflow: hidden;
+    }
+    .featured-card.is-live { border-color: rgba(220,38,38,0.5); background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(147,51,234,0.10)); }
+    .featured-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; color: var(--indigo); text-transform: uppercase; margin-bottom: 14px; }
+    .featured-card.is-live .featured-kicker { color: #fca5a5; }
+    .featured-card.is-live .featured-kicker::before { content: "●"; color: #dc2626; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+    .featured-card h2 { font-family: 'Sora'; font-size: clamp(22px, 3.5vw, 30px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 14px; }
+    .featured-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+    .featured-meta strong { color: #fff; }
+    .featured-cta-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .countdown { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 999px; font-size: 13px; color: var(--text-dim); }
+    .countdown strong { color: #fff; font-variant-numeric: tabular-nums; }
+
+    .hero { padding-bottom: 16px; }
+
+    .sub-note { color: var(--text-dimmer); font-size: 13px; max-width: 540px; margin: 22px auto 0; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="halos" aria-hidden="true">
+    <div class="halo halo-blue"></div>
+    <div class="halo halo-purple"></div>
+  </div>
+
+  <header>
+    <nav class="topnav">
+      <a href="index.html" class="brand"><span class="brand-dot"></span>MCPL<span style="color:#64748b">.live</span></a>
+      <a href="#replays" class="nav-cta">Voir les replays</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="trust-badge">
+        <span class="trust-stars">★★★★★</span>
+        Cabinets vérifiés 4,5/5 minimum
+      </div>
+      <h1>Vos questions de dirigeant.<br />
+        <span class="grad-text">Les réponses d'un expert-comptable certifié.</span>
+      </h1>
+      <p class="hero-sub">
+        Des webinaires gratuits où des experts-comptables vérifiés <strong>4,5/5 minimum</strong>
+        répondent en direct aux questions des chefs d'entreprise.
+        Posez les vôtres, ou rattrapez les replays.
+      </p>
+
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="TVA, holding, transmission, votre département…" autocomplete="off" />
+        <button class="search-btn" aria-label="Rechercher" onclick="document.getElementById('replays').scrollIntoView({behavior:'smooth'})">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="pills" id="pills"></div>
+      <p class="sub-note">Vous êtes expert-comptable ? <a href="cabinet.html" style="color:var(--indigo)">Devenir cabinet partenaire MCPL →</a></p>
+    </section>
+
+    <!-- Événement à l'affiche (live à venir ou en cours) -->
+    <div class="featured" id="featured" style="display:none">
+      <div class="featured-card" id="featured-card">
+        <div class="featured-kicker" id="featured-kicker"></div>
+        <h2 id="featured-title"></h2>
+        <p style="color:var(--text-dim);font-size:15px;line-height:1.55;margin-bottom:18px" id="featured-desc"></p>
+        <div class="featured-meta" id="featured-meta"></div>
+        <div class="featured-cta-row">
+          <a class="cta-gradient" id="featured-cta" href="#">Réserver ma place →</a>
+          <span class="countdown" id="countdown" style="display:none"></span>
+        </div>
+      </div>
+    </div>
+
+    <section class="container" id="replays">
+      <div class="section-head">
+        Replays disponibles
+        <span class="count-badge" id="count">0</span>
+      </div>
+      <p style="color:var(--text-dim);font-size:15px;line-height:1.55;max-width:600px;margin:-8px 0 22px">
+        Rattrapez ce qui a été dit. Chaque replay est animé par un cabinet vérifié, et chaque question reçoit une réponse concrète — sans jargon.
+      </p>
+      <div class="video-grid" id="grid"></div>
+      <div id="empty-replays" style="display:none" class="empty-state-light"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p style="max-width:620px;margin:0 auto 14px;line-height:1.6;color:var(--text-dim)">
+      <strong style="color:#fff">Tous les cabinets MCPL sont vérifiés 4,5/5 minimum</strong> sur Google et Trustpilot. Aucune exception.
+    </p>
+    <p>© 2026 Mon Comptable Part en Live · Édité par J&amp;D Services CO</p>
+    <p style="margin-top:8px">
+      <a href="mentions-legales.html">Mentions légales</a> ·
+      <a href="confidentialite.html">Confidentialité (RGPD)</a> ·
+      <a href="cabinet.html">Devenir cabinet partenaire</a>
+    </p>
+  </footer>
+
+  <script>
+    let CONTENT = { live: null, replays: [] };
+    const $ = (id) => document.getElementById(id);
+
+    async function loadContent() {
+      try {
+        const res = await fetch("/.netlify/functions/get-content");
+        const data = await res.json();
+        CONTENT = { live: data.live || null, replays: data.replays || [] };
+      } catch (e) {
+        CONTENT = { live: null, replays: [] };
+      }
+      renderFeatured();
+      renderPills();
+      renderGrid();
+    }
+
+    function renderFeatured() {
+      const f = $("featured"); const card = $("featured-card");
+      const live = CONTENT.live;
+      if (!live) { f.style.display = "none"; return; }
+      f.style.display = "block";
+      const isLive = live.is_live === true;
+      card.classList.toggle("is-live", isLive);
+
+      $("featured-kicker").textContent = isLive ? "En direct maintenant" : "Prochain live à l'affiche";
+      $("featured-title").textContent = live.title;
+      $("featured-desc").textContent = live.description || "";
+
+      const dt = live.scheduled_at ? new Date(live.scheduled_at) : null;
+      const dateStr = dt ? dt.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "";
+      const timeStr = dt ? dt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "";
+      const depts = (live.covered_departments || []).join(", ");
+
+      $("featured-meta").innerHTML = `
+        ${dt ? `<span>📅 <strong>${dateStr} · ${timeStr}</strong></span>` : ""}
+        <span>⏱ ${live.duration_min || 60} min</span>
+        <span>👤 <strong>${live.expert_name}</strong> — ${live.expert_company} (${live.expert_rating}/5)</span>
+        ${depts ? `<span>📍 Dépt ${depts}</span>` : ""}
+      `;
+
+      const cta = $("featured-cta");
+      if (isLive) {
+        cta.textContent = "Rejoindre le direct →";
+        cta.href = "replay.html?type=live";
+      } else {
+        cta.textContent = "Réserver ma place →";
+        cta.href = "replay.html?type=live";
+      }
+
+      // Countdown
+      const cd = $("countdown");
+      if (dt && !isLive) {
+        cd.style.display = "inline-flex";
+        const tick = () => {
+          const diff = dt - new Date();
+          if (diff <= 0) { cd.textContent = "Démarre dans quelques instants…"; return; }
+          const d = Math.floor(diff / 86400000);
+          const h = Math.floor((diff % 86400000) / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          cd.innerHTML = `Démarre dans <strong>${d > 0 ? d + "j " : ""}${h}h ${m}min</strong>`;
+        };
+        tick(); setInterval(tick, 60000);
+      } else { cd.style.display = "none"; }
+    }
+
+    function renderPills() {
+      // Pills construites dynamiquement depuis les tags réellement présents
+      const tags = Array.from(new Set(CONTENT.replays.map((r) => r.tag).filter(Boolean)));
+      const defaults = ["TVA", "Holding", "Immobilier", "Transmission", "Création"];
+      const merged = [...new Set([...tags, ...defaults])].slice(0, 6);
+      $("pills").innerHTML = merged.map((p) => `<button class="pill" data-q="${p}">${p}</button>`).join("");
+      $("pills").onclick = (e) => {
+        if (e.target.classList.contains("pill")) {
+          const q = e.target.dataset.q;
+          $("search").value = q; renderGrid(q);
+          document.getElementById("replays").scrollIntoView({ behavior: "smooth" });
+        }
+      };
+    }
+
+    function starRating(v) {
+      return `<span class="rating">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+        ${Number(v).toFixed(1)}</span>`;
+    }
+
+    function expertChip(r) {
+      const initials = (r.expert_name || "").split(/\s+/).map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+      return `<div class="expert-chip">
+        <div class="avatar">${initials}</div>
+        <div class="expert-meta">
+          <div class="expert-name">${r.expert_name || ""}</div>
+          <div class="expert-company">${r.expert_company || ""}</div>
+        </div>
+        ${starRating(r.expert_rating || 4.5)}
+      </div>`;
+    }
+
+    function renderGrid(filter = "") {
+      const grid = $("grid");
+      const q = filter.toLowerCase().trim();
+      const list = CONTENT.replays.filter((r) => {
+        if (!q) return true;
+        return (
+          (r.title || "").toLowerCase().includes(q) ||
+          (r.tag || "").toLowerCase().includes(q) ||
+          (r.expert_name || "").toLowerCase().includes(q) ||
+          (r.covered_departments || []).some((d) => String(d) === q)
+        );
+      });
+      $("count").textContent = list.length;
+      if (list.length === 0) {
+        grid.innerHTML = "";
+        grid.innerHTML = `<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--text-dim);background:var(--bg-card);border:1px dashed var(--border);border-radius:16px">
+          ${CONTENT.replays.length === 0 ? "Pas encore de replay publié. Le premier arrive bientôt." : "Aucun replay ne correspond à votre recherche."}
+        </div>`;
+        return;
+      }
+      grid.innerHTML = list.map((r) => `
+        <a class="video-card" href="replay.html?v=${r.id}">
+          <div class="thumb">
+            <span class="thumb-tag">${r.tag || ""}</span>
+            <span class="thumb-play">▶</span>
+          </div>
+          <div class="card-body">
+            <h3>${r.title}</h3>
+            ${expertChip(r)}
+            <div class="card-duration">${r.duration || "Replay"}</div>
+          </div>
+        </a>`).join("");
+    }
+
+    $("search").addEventListener("input", (e) => renderGrid(e.target.value));
+    loadContent();
+  </script>
+</body>
+</html>
