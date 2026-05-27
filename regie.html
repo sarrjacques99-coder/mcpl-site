@@ -103,7 +103,8 @@
       const headers = ["first_name","last_name","email","company","postal_code","departement","video_title","is_relocated","relocated_to_company","created_at"];
       const lines = [headers.join(",")];
       leads.forEach((l) => lines.push(headers.map((h) => `"${(l[h] ?? "").toString().replace(/"/g,'""')}"`).join(",")));
-      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+      // BOM UTF-8 (\uFEFF) pour qu'Excel ouvre le CSV en UTF-8, pas en latin-1
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `leads-mcpl-${new Date().toISOString().slice(0,10)}.csv`;
